@@ -137,7 +137,7 @@ def index():
         current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0])
         
         response=make_response(current_content)
-        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
         conn.close()
         return response
     except:
@@ -169,7 +169,7 @@ def nexts():
         if pages > counters-1:
            pages = counters-1
         if pages < 0:
-           pages
+           pages=0
         print(pages)
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
@@ -183,7 +183,7 @@ def nexts():
     
         current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0]) 
         response=make_response(current_content)
-        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
         conn.close()
         return response
     except:
@@ -231,7 +231,7 @@ def backs():
     
         current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0]) 
         response=make_response(current_content)
-        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
         conn.close()
         return response
     except:
@@ -259,7 +259,7 @@ def starts():
         if pages > counters-1:
            pages = counters-1
         if pages < 0:
-           pages
+           pages=0
         print(pages)
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
@@ -273,7 +273,7 @@ def starts():
     
         current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0])
         response=make_response(current_content)
-        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
         conn.close()
         return response
     except:
@@ -316,7 +316,7 @@ def ends():
     
         current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0])
         response=make_response(current_content)
-        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
         conn.close()
         return response
     except:
@@ -389,7 +389,7 @@ def new():
     
         current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0]) 
         response=make_response(current_content)
-        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
         conn.close()
         return response
     except:
