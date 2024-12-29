@@ -1,13 +1,31 @@
 from flask import Flask, request, jsonify, render_template_string, make_response
-
+import os
 import sqlite3
-
+global counters 
+counters=0
 app = Flask(__name__)
+# Nome do arquivo para salvar o contador
+counter_file = 'count.txt'
+db_file = 'data.db'
+# Função para salvar o contador no arquivo
+def save_counter(count):
+    with open(counter_file, 'w') as file:
+        file.write(str(count))
 
-db_file = 'datas.db'
+def load_counter():
+    if os.path.exists(counter_file):
+        with open(counter_file, 'r') as file:
+            try:
+                ttt=file.read().strip()
+                
+                return int(ttt)
+            except ValueError:
+                return 0
+    return 0
 
 # Função para inicializar a base de dados
 def init_db():
+    global counters
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
     cursor.execute('''
@@ -19,6 +37,8 @@ def init_db():
     conn.commit()
     conn.close()
 
+    counters=load_counter()
+    print(counters)
 # Inicializa a base de dados ao iniciar o servidor
 init_db()
 
@@ -92,169 +112,298 @@ HTML_TEMPLATE = """
 # Rota principal
 @app.route('/')
 def index():
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('SELECT text FROM content')
-    row = cursor.fetchone()
-
-    spages = request.cookies.get('Pages')
+    pages =0
     try:
+        spages = request.cookies.get('Pages')
+        
         current_content = HTML_TEMPLATE
         if spages is None:
            pages = 0
         else:
            pages =int(spages)
-        if pages > len(row)-1:
-           pages = len(row)-1
+        if pages > counters-1:
+           pages = counters-1
+        print(pages)
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.execute('SELECT  text FROM content where id='+str(pages+1))
+        row = cursor.fetchone()
+        
         
     
-        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[pages]) 
+        
+        
+        
+        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0])
+        
+        response=make_response(current_content)
+        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        conn.close()
+        return response
     except:
         print("page error:")
         response=make_response(current_content)
-        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
-        return current_content
+        response.set_cookie('Pages', str(0), max_age=60*60*24*365)  # Cookie válido por 1 ano
+        return response
+        try:
+            conn.close()
+        except:
+            pass
+        
 
-    for n in row:
-        print(row)
+  
+    return ""
+
+
+
+@app.route('/nexts', methods=['POST'])
+def nexts():
+    pages =0
+    try:
+        spages = request.cookies.get('Pages')
+        current_content = HTML_TEMPLATE
+        if spages is None:
+           pages = 0
+        else:
+           pages =int(spages)+1
+        if pages > counters-1:
+           pages = counters-1
+        if pages < 0:
+           pages
+        print(pages)
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.execute('SELECT  text FROM content where id='+str(pages+1))
+        row = cursor.fetchone()
+
+        
+    
+        
+        
+    
+        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0]) 
+        response=make_response(current_content)
+        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        conn.close()
+        return response
+    except:
+        print("page error:")
+        response=make_response(current_content)
+        response.set_cookie('Pages', str(0), max_age=60*60*24*365)  # Cookie válido por 1 ano
+        return response
+        try:
+            conn.close()
+        except:
+            pass
+
+        return ""
+
+  
     conn.close()
-    return current_content
+    response=make_response(current_content)
+    response.set_cookie('Pages', str(Pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
+    return response
+@app.route('/backs', methods=['POST'])
+def backs():
+    pages =0
+    try:
+        spages = request.cookies.get('Pages')
+        current_content = HTML_TEMPLATE
+        
+        if spages is None:
+           pages = 0
+        else:
+           pages =int(spages)-1
+        if pages > counters-1:
+           pages = counters-1
+        if pages < 0:
+           pages=0
+        print(pages)
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.execute('SELECT  text FROM content where id='+str(pages+1))
+        row = cursor.fetchone()
+
+        
+    
+        
+        
+    
+        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0]) 
+        response=make_response(current_content)
+        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        conn.close()
+        return response
+    except:
+        print("page error:")
+        response=make_response(current_content)
+        response.set_cookie('Pages', counters, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        return response
+        try:
+            conn.close()
+        except:
+            pass
+
+        return ""
+
+@app.route('/starts', methods=['POST'])
+def starts():
+    pages =0
+    try:
+        spages = request.cookies.get('Pages')
+        current_content = HTML_TEMPLATE
+        if spages is None:
+           pages = 0
+        else:
+           pages =0
+        if pages > counters-1:
+           pages = counters-1
+        if pages < 0:
+           pages
+        print(pages)
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.execute('SELECT  text FROM content where id='+str(pages+1))
+        row = cursor.fetchone()
+
+        
+    
+        
+        
+    
+        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0])
+        response=make_response(current_content)
+        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        conn.close()
+        return response
+    except:
+        print("page error:")
+        response=make_response(current_content)
+        response.set_cookie('Pages', str(0), max_age=60*60*24*365)  # Cookie válido por 1 ano
+        return response
+        try:
+            conn.close()
+        except:
+            pass
+
+        return ""
+
+
+@app.route('/ends', methods=['POST'])
+def ends():
+    pages =0
+    try:
+        spages = request.cookies.get('Pages')
+        current_content = HTML_TEMPLATE
+        if spages is None:
+           pages = counters
+        else:
+           pages =int(spages)+1
+        if pages > counters-1:
+           pages = counters-1
+        if pages < 0:
+           pages
+        print(pages)
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.execute('SELECT  text FROM content where id='+str(pages+1))
+        row = cursor.fetchone()
+
+        
+    
+        
+        
+    
+        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0])
+        response=make_response(current_content)
+        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        conn.close()
+        return response
+    except:
+        print("page error:")
+        response=make_response(current_content)
+        response.set_cookie('Pages', str(0), max_age=60*60*24*365)  # Cookie válido por 1 ano
+        return response
+        try:
+            conn.close()
+        except:
+            pass
+
+        return current_content
 
 # Rota para adicionar novo conteúdo
 @app.route('/new', methods=['POST'])
 def new():
+    global counters 
     raw_text = request.form.get('new_text', '')
-    decoded_text = raw_text.replace('#0', '\n').replace('#1', '\r').replace('#2', '<').replace('#3', '>').replace('#4', '=')
-    html_ready_text = decoded_text.replace('\n', '<br>').replace('\r', '<br>')
-    html_ready_text = html_ready_text.strip()
+    
+    decoded_text = raw_text.replace('#0', '<br>').replace('#1', '<br>').replace('#2', '<').replace('#3', '>').replace('#4', '=')
+    
+    html_ready_text = decoded_text.strip()
     if  html_ready_text !="":
         try:
+            
+            
+            
+            counters=counters+1
+            
+            save_counter(counters)
+           
             conn = sqlite3.connect(db_file)
+            
             cursor = conn.cursor()
-            print(html_ready_text)
+            
             cursor.execute('INSERT INTO content (text) VALUES (?)', (html_ready_text,))
+            
             conn.commit()
             conn.close()
         except:
             print(f"Erro ao inserir no banco de dados:")
         finally:
+            try:
+                conn.close()
+            except:
+                pass
+    pages =0
+    try:
+       
+        current_content = HTML_TEMPLATE
+        if spages is None:
+           pages = counters
+        else:
+           pages =int(spages)+1
+        if pages > counters-1:
+           pages = counters-1
+        if pages < 0:
+           pages
+        print(pages)
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.execute('SELECT  text FROM content where id='+str(pages+1))
+        row = cursor.fetchone()
+
+
+    
+        
+        
+    
+        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[0]) 
+        response=make_response(current_content)
+        response.set_cookie('Pages', pages, max_age=60*60*24*365)  # Cookie válido por 1 ano
+        conn.close()
+        return response
+    except:
+        print("page error:")
+        response=make_response(current_content)
+        response.set_cookie('Pages', str(0), max_age=60*60*24*365)  # Cookie válido por 1 ano
+        return response
+        try:
             conn.close()
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('SELECT text FROM content')
-    
-    row = cursor.fetchone()
+        except:
+            pass
 
-    
-    
-    pages = len(row)-1
-    print(pages)
-    current_content = HTML_TEMPLATE
-    try:
-        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[pages]) 
-    except:
-        print("page error:")
-    conn.commit()
-    conn.close()
-    response=make_response(current_content)
-    response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
-    return current_content
+        return ""
 
-@app.route('/nexts', methods=['POST'])
-def nexts():
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('SELECT text FROM content')
-    row = cursor.fetchone()
-
-    spages = request.cookies.get('Pages')
-    if spages is None:
-        pages = 0
-    else:
-        pages =int(spages)+1
-    if pages > len(row)-1:
-        pages = len(row)-1
-    current_content = HTML_TEMPLATE
-    try:
-        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[pages]) 
-    except:
-        print("page error:")
-    for n in row:
-        print(row)
-    conn.close()
-    response=make_response(current_content)
-    response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
-    return current_content
-@app.route('/backs', methods=['POST'])
-def backs():
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('SELECT text FROM content')
-    row = cursor.fetchone()
-
-    spages = request.cookies.get('Pages')
-    if spages is None:
-        pages = 0
-    else:
-        pages =int(spages)-1
-    if pages > len(row)-1:
-        pages = len(row)-1
-    if pages <0:
-        pages = 0
-
-
-    current_content = HTML_TEMPLATE
-    try:
-        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[pages]) 
-    except:
-        print("page error:")
-    for n in row:
-        print(row)
-    conn.close()
-    response=make_response(current_content)
-    response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
-    return current_content
-@app.route('/starts', methods=['POST'])
-def starts():
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('SELECT text FROM content')
-    row = cursor.fetchone()
-
-    pages = 0
-    
-    current_content = HTML_TEMPLATE
-    try:
-        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[pages]) 
-    except:
-        print("page error:")
-    for n in row:
-        print(row)
-    conn.close()
-    response=make_response(current_content)
-    response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
-    return current_content
-
-@app.route('/ends', methods=['POST'])
-def ends():
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    cursor.execute('SELECT text FROM content')
-    row = cursor.fetchone()
-
-    pages = len(row)-1
-    
-    current_content = HTML_TEMPLATE
-    try:
-        current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[pages]) 
-    except:
-        print("page error:")
-    for n in row:
-        print(row)
-    conn.close()
-    response=make_response(current_content)
-    response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
-    return current_content
 
 if __name__ == '__main__':
     app.run(debug=True)
