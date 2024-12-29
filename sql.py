@@ -121,13 +121,18 @@ def new():
     decoded_text = raw_text.replace('#0', '\n').replace('#1', '\r').replace('#2', '<').replace('#3', '>').replace('#4', '=')
     html_ready_text = decoded_text.replace('\n', '<br>').replace('\r', '<br>')
     html_ready_text = html_ready_text.strip()
-    if  html_ready_text !="": 
-        conn = sqlite3.connect(db_file)
-        cursor = conn.cursor()
-        print(html_ready_text)
-        cursor.execute('INSERT INTO content (text) VALUES (?)', (html_ready_text,))
-        conn.commit()
-        conn.close()
+    if  html_ready_text !="":
+        try:
+            conn = sqlite3.connect(db_file)
+            cursor = conn.cursor()
+            print(html_ready_text)
+            cursor.execute('INSERT INTO content (text) VALUES (?)', (html_ready_text,))
+            conn.commit()
+            conn.close()
+        except:
+            print(f"Erro ao inserir no banco de dados:")
+        finally:
+            conn.close()
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
     cursor.execute('SELECT text FROM content')
