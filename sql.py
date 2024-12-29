@@ -4,7 +4,7 @@ import sqlite3
 
 app = Flask(__name__)
 
-db_file = 'data.db'
+db_file = 'datas.db'
 
 # Função para inicializar a base de dados
 def init_db():
@@ -98,17 +98,23 @@ def index():
     row = cursor.fetchone()
 
     spages = request.cookies.get('Pages')
-    if spages is None:
-        pages = 0
-    else:
-        pages =int(spages)
-    if pages > len(row)-1:
-        pages = len(row)-1
-    current_content = HTML_TEMPLATE
     try:
+        current_content = HTML_TEMPLATE
+        if spages is None:
+           pages = 0
+        else:
+           pages =int(spages)
+        if pages > len(row)-1:
+           pages = len(row)-1
+        
+    
         current_content = HTML_TEMPLATE.replace("{{ No content available }}",row[pages]) 
     except:
         print("page error:")
+        response=make_response(current_content)
+        response.set_cookie('Pages', str(pages), max_age=60*60*24*365)  # Cookie válido por 1 ano
+        return current_content
+
     for n in row:
         print(row)
     conn.close()
