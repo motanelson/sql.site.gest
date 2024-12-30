@@ -296,9 +296,9 @@ def ends():
         spages = request.cookies.get('Pages')
         current_content = HTML_TEMPLATE
         if spages is None:
-           pages = counters
+           pages = counters-1
         else:
-           pages =int(spages)+1
+           pages = counters-1
         if pages > counters-1:
            pages = counters-1
         if pages < 0:
